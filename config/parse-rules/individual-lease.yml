@@ -1,0 +1,99 @@
+# Individual flat lease (a sample, with the flat, the lessee and the money replaced by
+# placeholders) — declarative parse rules.
+# Structured exceptions and guidance for Claude: overrides/individual-lease.md.
+#
+# Word document. None of the clause, sub-clause or paragraph numbers are typed: Word
+# generates them from the Heading 1 and Heading 2 styles. The docx reader works the
+# numbers out and puts them back in front of the text, so these rules see the lease as it
+# prints ("7.12 The Lessee shall…").
+
+extract:
+  engine: docx
+
+front-matter:
+  ends-at: clause              # cover, particulars, parties, recitals and clause 1 (definitions)
+
+headings:                      # a schedule heading clears the part and clause headings
+  - level: schedule
+    match: '^THE (?P<ordinal>[A-Z]+) SCHEDULE$'
+    title-from-next-line: { style: Body Text }
+    display: 'The {ordinal_title} Schedule – {title}'
+  - level: part
+    match: '^[“"]*PART\s+[“"]*(?P<id>[A-Z]+)[”"'']*$'   # PART “A", "PART "D", PART "F'', PART ONE
+    title-from-next-line: { style: Body Text }
+    display: 'Part {id_title} – {title}'
+  - level: clause
+    style: Heading 1           # in the schedules, Heading 1 is a paragraph, not a clause…
+    case: upper                # …but only clause headings are in capitals
+    max-words: 10
+    match: '^(?P<number>\d+)\s+(?P<title>.+)$'
+    display: '{number} {title}'
+
+display-case: sentence         # clause titles are printed in capitals
+
+units:
+  key: [clause, sub]
+  fields: [schedule, part]     # heading levels recorded in each concept's frontmatter
+  number-field: clause_number
+  numbers-field: clause_numbers
+  description: first-sentence
+  patterns:
+    - match: '^(?P<clause>\d+)\.(?P<sub>\d+)\s+'          # a sub-clause
+      unless-heading: schedule
+      continues-with-style: [Heading 2]    # a Body Text paragraph after it is back at clause level
+      filename: 'clause-{clause}-{sub}'
+      title: 'Clause {clause}.{sub} – {clause_title}'
+      group-heading: 'Clause {clause}.{sub}'   # sub-heading when a clause is kept whole
+      number: '{clause}.{sub}'
+    - match: '^(?P<para>\d+)\s+'                          # a paragraph of a part of a schedule
+      requires-heading: part
+      filename: 'schedule-{schedule_ordinal_lower}-part-{part_id_lower}-{para}'
+      title: 'The {schedule_ordinal_title} Schedule, Part {part_id_title} – paragraph {para}'
+      number: '{para}'
+      number-field: paragraph_number
+      key: 'schedule.{schedule_ordinal}.{part_id}.{para}'
+    - match: '^(?P<para>\d+)\s+'                          # a paragraph of a schedule with no parts
+      requires-heading: schedule
+      unless-heading: part
+      filename: 'schedule-{schedule_ordinal_lower}-{para}'
+      title: 'The {schedule_ordinal_title} Schedule – paragraph {para}'
+      number: '{para}'
+      number-field: paragraph_number
+      key: 'schedule.{schedule_ordinal}.{para}'
+  heading-fallback:            # text under a heading that has no numbered units of its own
+    - level: part              # Parts B, C and E are a single unnumbered paragraph
+      filename: 'schedule-{schedule_ordinal_lower}-part-{part_id_lower}'
+      title: 'The {schedule_ordinal_title} Schedule, Part {part_id_title}'
+      number: ''
+      key: 'schedule.{schedule_ordinal}.{part_id}'
+    - level: clause            # a clause with no sub-clauses, or its words outside them
+      filename: 'clause-{clause_number}'
+      title: 'Clause {clause_number} – {clause_title}'
+      title-if-split: 'Clause {clause_number} – {clause_title} (general words)'
+      group-heading: ''        # kept whole: the clause's own words have no sub-heading
+      number: '{clause_number}'
+      key: '{clause_number}'
+    - level: schedule
+      filename: 'schedule-{schedule_ordinal_lower}'
+      title: 'The {schedule_ordinal_title} Schedule – {schedule_title}'
+      number: ''
+      key: 'schedule.{schedule_ordinal}'
+
+definitions:
+  - file: definitions          # clause 1: the table after "In this Deed unless the context…"
+    title: Definitions
+    type: definitions
+    form: table
+    after-text: 'In this Deed unless the context otherwise requires'
+    term-cell: '^[“"]?(?:the\s+)?(?P<term>.+?)[”"]?$'   # “the Accessways” -> Accessways
+  - file: particulars          # the particulars table on the cover
+    title: Particulars
+    type: particulars
+    form: table
+    first-cell: 'ADMINISTRATIVE AREA'
+    skip-terms: [PARTICULARS]  # a sub-heading row with no value
+
+cross-references:
+  - '(?i)\bclauses?\s+(?P<clause>\d+)(?:\.(?P<sub>\d+))?'
+  - match: '(?i)\bparagraph\s+(?P<para>\d+)\s+of\s+the\s+(?P<ordinal>\w+)\s+schedule'
+    key: 'schedule.{ordinal}.{para}'

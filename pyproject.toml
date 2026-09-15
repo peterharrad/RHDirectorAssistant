@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rh-director-assistant"
+version = "0.1.0"
+description = "Parse RTM company governing documents into an Open Knowledge Format bundle"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Peter Harrad" }]
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic",
+    "pdfplumber",
+    "python-docx",
+    "python-dotenv",
+    "PyYAML",
+]
+
+[project.scripts]
+rh-build = "build_okf:main"
+rh-build-single = "build_single:main"
+rh-redact = "redact.main:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+redact = ["reportlab"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["parse", "validate", "redact"]
+py-modules = ["assemble", "build_okf", "build_single", "frontmatter"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

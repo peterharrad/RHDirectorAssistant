@@ -1,0 +1,126 @@
+# Provenance and pointers for every source document. No prose: parsing
+# instructions live in parse-rules/ (declarative) and overrides/ (judgement).
+
+bundle:
+  title: "Riverside House Reading RTM Company"
+  description: "Governing documents of the RTM company, one concept per unit of independent meaning."
+  groups:                      # titles for the top-level folders of the bundle
+    articles: "Articles of Association"
+    leases: "Leases"
+    agreements: "Agreements"
+    guidance: "Guidance"
+    titles: "Title registers"
+    legislation: "Legislation"
+    building: "Building"
+
+documents:
+  - id: articles
+    bundle-path: articles
+    source: sources/Articles_Of_Association.pdf
+    description: "Riverside House Reading RTM Company Limited Articles of Association"
+    resource: "https://find-and-update.company-information.service.gov.uk/company/17149089/filing-history/MzUyMjY0OTQ3OWFkaXF6a2N4/document?format=pdf&download=0"
+    author: "Riverside House Reading RTM Company Limited"
+    last-modified: "2026-05-28"
+    document-type: "legal/ guidance"
+    status: stable           # output reviewed
+    concept-type: "articles clause"
+    parse-rules: parse-rules/articles.yml
+    overrides: overrides/articles.md
+
+  - id: sample-lease
+    bundle-path: leases/sample-lease
+    source: sources/RiversideHouse-IndividualLease.docx
+    description: "Sample Residential Lease"
+    author: "HM Land Registry"
+    last-modified: "2003-07-22"
+    document-type: "legal/ guidance"
+    status: stable           # output reviewed
+    concept-type: "lease clause"
+    parse-rules: parse-rules/individual-lease.yml
+    overrides: overrides/individual-lease.md
+
+  - id: management-lease
+    bundle-path: leases/management-lease
+    source: sources/BK401853 Management Lease.pdf
+    description: "Riverside House Management Lease"
+    author: "HM Land Registry"
+    last-modified: "2026-05-28"
+    document-type: "legal/ guidance"
+    status: stable           # output reviewed; transcript checked
+    concept-type: "lease clause"
+    parse-rules: parse-rules/management-lease.yml
+    overrides: overrides/management-lease.md
+
+  - id: agency-agreement
+    bundle-path: agreements/agency-agreement
+    source: sources/F11_Common_Ground_Agency_Agreement_Final - signed.pdf
+    description: "Common Ground Services Agreement"
+    author: "Common Ground"
+    last-modified: "2026-08-13"
+    document-type: "legal/ guidance"
+    status: stable           # output reviewed
+    concept-type: "agreement clause"
+    parse-rules: parse-rules/agency-agreement.yml
+    overrides: overrides/agency-agreement.md
+
+  - id: rics-code
+    bundle-path: guidance/rics-code
+    source: sources/Service-Charge-Residential-Management-Code_4th-edition.pdf
+    description: "RICS Service Charge Residential Management Code, 4th edition"
+    resource: "https://www.rics.org/profession-standards/rics-standards-and-guidance/sector-standards/real-estate-standards/service-charge-residential-management-code"
+    author: "RICS"
+    last-modified: "2026-04-07"
+    document-type: "legal/ guidance"
+    status: stable           # output reviewed
+    concept-type: "guidance section"
+    parse-rules: parse-rules/rics-code.yml
+    overrides: overrides/rics-code.md
+
+  - id: land-title
+    bundle-path: titles/land-title
+    source: sources/RiversideHouseReading-LandTitle-BK122099.pdf
+    description: "Original Title for the land. BK397927 was carved out of this title to contain the actual block."
+    author: "HM Land Registry"
+    last-modified: "2026-01-19"    # printout viewed on this date; not an official copy
+    status: stable
+    concept-type: "title"
+    parse-rules: parse-rules/register.yml
+
+  - id: freehold-title
+    bundle-path: titles/freehold-title
+    source: sources/RiversideHouseReading-FreeholdTitle-BK397927.pdf
+    description: "The Freehold Title for Riverside House"
+    author: "HM Land Registry"
+    last-modified: "2026-01-19"    # printout viewed on this date; not an official copy
+    status: stable
+    concept-type: "title"
+    parse-rules: parse-rules/register.yml
+
+  - id: leasehold-title
+    bundle-path: titles/leasehold-title
+    source: sources/RiversideHouseReading-LeaseholdTitle-BK401853.pdf
+    description: "The leasehold title register for the Management Lease of Riverside House"
+    author: "HM Land Registry"
+    last-modified: "2026-01-19"    # printout viewed on this date; not an official copy
+    status: stable
+    concept-type: "title"
+    parse-rules: parse-rules/register.yml
+
+legislation:
+  - reference: "Commonhold and Leasehold Reform Act 2002 part 2 chapter 1"
+    status: stable
+    description: "Right to Manage definition"
+    tags: [Right To Manage]
+    resource: "https://www.legislation.gov.uk/ukpga/2002/15/part/2/chapter/1"
+
+  - reference: "Landlord and Tenant Act 1985"
+    status: stable
+    description: "Definitions of section 20, section 21, section 22 and HRBs"
+    tags: [section 20, major works, HRB, building safety]
+    resource: "https://www.legislation.gov.uk/ukpga/1985/70/contents"
+
+  - reference: "Building Safety Act 2022 part 4"
+    status: stable
+    description: "Definitions of Higher Risk Building"
+    tags: [HRB, building safety]
+    resource: "https://www.legislation.gov.uk/ukpga/2022/30/part/4"

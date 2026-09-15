@@ -1,0 +1,69 @@
+# RICS Service Charge Residential Management Code — declarative parse rules.
+# Structured exceptions and guidance for Claude: overrides/rics-code.md.
+# This is a born-digital PDF, so it is read directly; headings are found by font
+# size (chapter 32pt, section 16pt, sub-section 14pt, body 11pt), not by bold.
+
+extract:
+  engine: pdf-layout
+  top-margin: 60               # above this is the page number
+  bottom-margin: 800           # below this is the running footer
+  join-ratio: 1.6              # join lines of one size sitting closer than this × size
+  tables: markdown           # ruled tables become markdown tables
+  break-prefixes: ["•"]        # a bullet always starts a new line
+  drop:
+    - '^Service charge residential management code'
+
+front-matter:
+  ends-at: chapter             # cover, contents, framework and glossary precede chapter 1
+
+headings:
+  - level: chapter
+    size: 32
+    patterns:
+      - match: '^(?P<number>\d+)\s+(?P<title>.+)$'
+        display: '{number} {title}'
+      - match: '^(?P<title>Appendix [A-Z].*)$'
+        display: '{title}'
+
+units:
+  size: 16
+  key: [chapter, section]
+  fields: [chapter]            # heading levels recorded in each concept's frontmatter
+  number-field: section_number
+  numbers-field: section_numbers
+  description: first-sentence  # no description written? use the section's opening sentence
+  patterns:
+    - match: '^(?P<chapter>\d+)\.(?P<section>\d+)\s+(?P<title>.+)$'
+      filename: 'section-{chapter}-{section}'
+      title: '{chapter}.{section} {title}'
+      number: '{chapter}.{section}'
+    - match: '^(?P<chapter>[A-D])(?P<section>\d+)\s+(?P<title>.+)$'  # appendix entries
+      filename: 'appendix-{chapter_lower}-{section}'
+      title: '{chapter}{section} {title}'
+      number: '{chapter}{section}'
+  heading-fallback:            # text under a chapter heading that has no numbered section
+    - level: chapter
+      match: '^Appendix'       # an appendix with no numbered sections is one concept
+      filename: '{slug}'
+      title: '{chapter}'
+      number: ''
+    - level: chapter           # a chapter's opening text, before its first section
+      filename: 'chapter-{slug}-introduction'
+      title: '{chapter} – introduction'
+      number: ''
+
+body-headings:                 # sub-sections stay inside their section, as sub-headings
+  - size: 14
+    markdown: '###'
+
+definitions:
+  file: definitions
+  title: Glossary
+  type: definitions
+  form: table
+  from-heading: '^Glossary$'
+  to-heading: '^Building Safety Act 2022 glossary'
+  skip-terms: [Term]
+
+cross-references:
+  - '(?i)\bsections?\s+(?P<chapter>\d+)\.(?P<section>\d+)'

@@ -1,0 +1,72 @@
+# Common Ground management agency agreement — declarative parse rules.
+# Structured exceptions and guidance for Claude: overrides/agency-agreement.md.
+# Born-digital PDF: clause headings are 13pt, appendix headings 16pt, body 10pt.
+
+extract:
+  engine: pdf-layout
+  top-margin: 40
+  bottom-margin: 800
+  join-ratio: 1.6              # join lines of one size sitting closer than this × size
+  tables: markdown
+  break-prefixes: ["•"]
+  drop:                        # the signature block starts at the foot of page 9
+    - '^Authorised signature on behalf of the Client$'
+  skip-pages:                  # personal data, and not part of the agreement's terms
+    - page: 10
+      expect: "Authorised signature on behalf of the Manager"
+    - page: 23
+      expect: "Final Audit Report"
+
+front-matter:
+  ends-at: clause              # title page, contents, parties and recitals come first
+
+headings:
+  - level: appendix
+    size: 16
+    match: '^APPENDIX\s+(?P<number>\d+)$'
+    title-from-next-line: { size: 13 }   # the appendix title sits on the line below
+    display: 'Appendix {number} – {title}'
+  - level: clause
+    size: 13
+    match: '^(?P<number>\d+)\.\s+(?P<title>.+)$'
+    display: '{number}. {title}'
+
+display-case: sentence         # upper-case appendix titles are shown in sentence case
+
+units:
+  size: 10
+  key: [clause, sub]
+  fields: [appendix, clause]   # heading levels recorded in each concept's frontmatter
+  number-field: clause_number
+  numbers-field: clause_numbers
+  description: first-sentence
+  patterns:
+    - match: '^(?P<clause>\d+)\.(?P<sub>\d+)\s+'   # a sub-clause; 2.2.1 stays inside 2.2
+      filename: 'clause-{clause}-{sub}'
+      title: 'Clause {clause}.{sub} – {clause_title}'
+      group-heading: 'Clause {clause}.{sub}'   # sub-heading when merged into one concept
+      number: '{clause}.{sub}'
+  heading-fallback:
+    - level: clause            # a clause with no sub-clauses, or its opening words
+      filename: 'clause-{clause_number}'
+      title: 'Clause {clause_number} – {clause_title}'
+      title-if-split: 'Clause {clause_number} – {clause_title} (opening words)'
+      group-heading: ''        # merged into a group: no sub-heading of its own
+      number: '{clause_number}'
+      key: '{clause_number}'
+    - level: appendix          # an appendix is one concept, taken as it stands
+      filename: 'appendix-{appendix_number}'
+      title: 'Appendix {appendix_number} – {appendix_title}'
+      number: 'Appendix {appendix_number}'
+      key: 'appendix.{appendix_number}'
+
+definitions:
+  unit: 1                      # clause 1 is the definitions clause
+  file: definitions
+  title: Definitions
+  type: definitions
+  term: '^(?P<term>[A-Z][^:]{1,60}):\s'   # "Additional Fees: means …"
+
+cross-references:
+  - '(?i)\bclause\s+(?P<clause>\d+)(?:\.(?P<sub>\d+))?'
+  - '(?i)\b(?P<clause>appendix)\s+(?P<sub>\d+)'

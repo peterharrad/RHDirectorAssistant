@@ -1,0 +1,29 @@
+# Secrets: API keys live in .env, never committed
+.env
+
+# Intermediate extraction output (okf-bundle/ itself IS committed)
+work/
+
+# Office / LibreOffice lock files
+.~lock.*#
+~$*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Local tool settings
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

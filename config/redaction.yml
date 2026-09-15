@@ -1,0 +1,51 @@
+# How each source document is redacted for the public repo (rh-redact).
+#
+# Body text becomes lorem ipsum. Kept as they are: headings, numbering, the defined
+# terms (taken from each document's assembled definitions) and whatever the parse rules
+# look for in the text (cross-references, drop and skip-page markers, table locators),
+# which is read from the parse rules automatically. List anything else under keep.
+#
+#   method     copy (published as it is), pdf, docx or transcript
+#   keep       further regular expressions to keep wherever they match
+#   keep-sizes (pdf) font sizes of lines kept whole: the heading sizes
+#   titles-after (docx) headings whose next paragraph is a title, kept whole
+
+output: ../RHDirectorAssistant
+
+documents:
+  articles:
+    method: copy               # on the public Companies House register
+
+  rics-code:
+    method: pdf
+    keep-sizes: [32, 16, 14]   # chapter, section and sub-section headings
+
+  agency-agreement:
+    method: pdf
+    keep-sizes: [16, 13]       # appendix and clause headings
+
+  sample-lease:
+    method: docx
+    titles-after:
+      - '^THE [A-Z]+ SCHEDULE$'
+      - '^[“"]*PART\s+[“"]*[A-Z]+[”"'']*$'
+
+  management-lease:
+    method: transcript
+    keep:
+      - '^IN WITNESS'
+      - '^In this deed unless the context otherwise requires'
+
+  land-title: &register
+    method: pdf
+    keep-sizes: [16]           # "A: Property Register"
+    keep:
+      - 'Accessed on \d{1,2} \w+ \d{4} at \d{2}:\d{2}:\d{2}'
+      - '\((?:Freehold|Leasehold)\)\s*$'
+      - '^[A-Z]{2,3}\d+$'      # the title number, on a line of its own
+      - 'NOTE:'
+      - '^Entry number'
+      - '^Class of Title:'
+
+  freehold-title: *register
+  leasehold-title: *register

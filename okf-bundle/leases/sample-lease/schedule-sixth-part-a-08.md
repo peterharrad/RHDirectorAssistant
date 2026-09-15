@@ -1,0 +1,21 @@
+---
+type: lease clause
+title: The Sixth Schedule, Part A – paragraph 8
+description: Adipiscing, condimentum qui cupidatat (do sed et laboris senectus ea voluptate) non massa curabitur tincidunt sed tristique duis aliquip id sed Habitant
+schedule: The Sixth Schedule – The Maintenance Expenses
+part: Part A – (Building Costs)
+paragraph_number: 8
+sources:
+- id: sample-lease
+  title: Sample Residential Lease
+  author: HM Land Registry
+  last_modified: '2003-07-22'
+generated:
+  by: rh-director-assistant 0.1.0
+  at: '2026-09-15T17:12:50Z'
+status: stable
+---
+
+# The Sixth Schedule, Part A – paragraph 8
+
+Adipiscing, condimentum qui cupidatat (do sed et laboris senectus ea voluptate) non massa curabitur tincidunt sed tristique duis aliquip id sed Habitant

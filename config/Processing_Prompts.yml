@@ -1,0 +1,394 @@
+# Processing prompts: the intent behind how each source document is read and cut up.
+#
+# One entry per document, keyed by its id in config/manifest.yml, so renaming a source
+# file doesn't break the link. Each entry has up to three parts:
+#
+#   structure    how to read the document: shared by every output
+#   okf          grain and naming for the OKF concept files in okf-bundle/
+#   single-file  what this document's file in single-files/ holds, on top of
+#                single-file-defaults
+#
+# This file is the specification, not the implementation. The parse rules and overrides
+# each document points to in config/manifest.yml are what the build runs. When either
+# changes, keep the other in step. The okf and single-file prompts below describe what
+# was built and reviewed as of the date below. Files that don't come from a source
+# document (legislation, building) are under additional-files at the end.
+
+last-updated: "15 Sep 2026"
+
+single-file-defaults: |
+  Write each source document as one markdown file in single-files/, named by its id in
+  config/manifest.yml ('articles.md'). The three title registers are three files, one
+  per title.
+
+  Build each file from the document's okf processing: every OKF concept file becomes a
+  section of the single file, in document order, and nothing else goes in. Front matter
+  that isn't a concept (parties, recitals, the register summary) is left out.
+
+  Start the file with frontmatter giving its title (the document's description in the
+  manifest), its source (id, title, author, last modified and resource) and the tool that
+  generated it. Give no build time, so an unchanged document rebuilds identically.
+
+  Start each section with an anchor named after its concept file
+  ('<a id="article-17"></a>'), then a heading 1 with the concept's title, then three
+  fields as a bulleted list: its title, its description and its reference (the article,
+  clause, paragraph or section number, or the register for a title). Leave out a field
+  with no value. Then the concept's text, with its own headings kept at heading 2 and
+  below.
+
+  Turn cross-references into links to the anchor of the section they point to, within
+  the same file ('[article 26](#article-26)').
+
+  Leave out of every file, whatever the document: signature blocks, copyright notices,
+  audit trails, and page headers and footers.
+
+  The legislation references and the building notes each become a file of their own:
+  see additional-files at the end.
+
+documents:
+
+  # ---------------------------------------------------------------------------------------
+  articles:
+    source: "sources/Articles_Of_Association.pdf"
+    structure: |
+      This document is the Articles of Association of Riverside House Reading RTM Company
+      Limited. It is a scanned PDF: read it from its checked transcript
+      (transcripts/articles.md), not from its OCR text layer.
+
+      It is a series of numbered articles. An article starts with an integer followed by a
+      period at the left margin and runs until the next article number or the next heading.
+      Within an article, (1), (a) and (i) are sub-paragraphs and stay inside it.
+
+      Headings sit at three levels:
+        a) Part: a line "PART n", with the Part's title in bold capitals either on the same
+           line or on the line(s) below, where it may wrap over two lines.
+        b) Section: any other line in bold capitals.
+        c) Article heading: a line in bold, not in capitals, immediately above an article.
+           It belongs to that article only.
+      When a heading is met, it replaces the current value at its level and clears every
+      level below it.
+
+      Everything before the first Part heading is the title block.
+
+      Article 1 is the definitions: each defined term is in quotation marks and followed by
+      "means", "has the meaning" or "includes". Article 1(2) is a closing note, not a
+      definition.
+
+    okf: |
+      Extract article 1 into 'definitions.md', titled "Definitions". Give each defined term
+      its own heading, with the quotation marks removed. Put 1(2) under the heading "Other words and
+      expressions". Add the terms that are defined inside other articles, each pointing to
+      the article that defines it: "the 1987 Act" (5(e)), "eligible directors" (13(3)),
+      "permitted causes" (19(4)), "authorised person" (40(4)), "relevant director"
+      (43(3) and 44(2)) and "relevant loss" (44(2)).
+
+      Extract the title block together with articles 2 and 3 into 'company-details.md',
+      titled "Company details".
+
+      Extract every other article, from 4 to 44, into its own concept file named
+      'article-{number}' with the number padded to two digits, titled
+      "Article {number} – {article heading}". Articles 4, 5 and 6 are printed without a
+      heading: use "Objects", "Powers" and "Application of income".
+
+      Record each article's Part and section in its frontmatter. Show headings printed in
+      capitals in sentence case, keeping "RTM" in capitals. Turn references such as
+      "article 26" into links to that article. Each concept has a hand-written one-sentence
+      description.
+
+    single-file: |
+      One file, 'articles.md', of 43 sections: "Definitions" (article number 1),
+      "Company details" (article numbers 2 and 3), then articles 4 to 44, each with its
+      article number as its reference. Links such as "article 26" point to '#article-26'.
+
+  # ---------------------------------------------------------------------------------------
+  rics-code:
+    source: "sources/Service-Charge-Residential-Management-Code_4th-edition.pdf"
+    structure: |
+      This document is the RICS Service Charge Residential Management Code, 4th edition. It
+      is a born-digital PDF: read its text directly. Headings are told apart by font size,
+      not by bold, because bold is used for emphasis inside sentences.
+
+        a) Chapter (32pt): an integer followed by a title, such as "5 Service charges, ground
+           rent and administration charges", or an appendix, "Appendix B: Statutory rights
+           of leaseholders". Titles often wrap over two or more lines.
+        b) Section (16pt): an integer, a period and an integer followed by a title, such as
+           "5.2 Variable service charges". In the appendices, a letter and an integer, such
+           as "B3 The right to form a recognised tenants' association".
+        c) Sub-section (14pt): three numbers, such as "1.2.1 Must/should".
+      Body text is 11pt. Ignore the page number at the top of each page and the running
+      title at the bottom.
+
+      Everything before chapter 1 is front matter: the cover, acknowledgements, contents, the
+      RICS standards framework, document definitions, the glossary, and a short note on
+      Building Safety Act 2022 terms (which says those terms are defined in chapter 9).
+
+      The glossary is a ruled two-column table (Term, Definition) running from the heading
+      "Glossary" to the heading "Building Safety Act 2022 glossary".
+
+    okf: |
+      Extract the glossary table into 'definitions.md', titled "Glossary". Give each term
+      its own heading. Leave out the rest of the front matter.
+
+      Extract each section into its own concept file named 'section-{chapter}-{section}'
+      with both numbers padded to two digits, titled "{chapter}.{section} {section title}".
+      Keep its sub-sections inside it, as sub-headings.
+
+      Extract each appendix entry (A1, A2, B1 to B16) into its own concept file named
+      'appendix-{letter}-{number}', titled "{letter}{number} {title}".
+
+      Where a chapter has text before its first section, put that text in a concept file
+      titled "{chapter heading} – introduction" (chapters 8 and 12). An appendix with no
+      numbered entries is one concept file titled with its heading (appendices C and D).
+
+      Record each concept's chapter in its frontmatter. Turn ruled tables with at least two
+      rows and two columns into markdown tables; a single-cell box is a highlighted note and
+      stays as text. Turn references such as "section 5.5" into links to that section. Each
+      concept's description is its own opening sentence; the glossary's is hand-written.
+
+    single-file: |
+      One file, 'rics-code.md', of 170 sections: the "Glossary", then each section and
+      appendix entry in order, with its section number as its reference ("5.2", "B3").
+      The glossary, the introductions to chapters 8 and 12, and appendices C and D have no
+      reference. Links such as "section 5.5" point to '#section-05-05'.
+
+  # ---------------------------------------------------------------------------------------
+  agency-agreement:
+    source: "sources/F11_Common_Ground_Agency_Agreement_Final - signed.pdf"
+    structure: |
+      This document is the management agency agreement between the company and Common
+      Ground. It is a born-digital PDF: read its text directly.
+
+      It is a series of clauses, most with sub-clauses, followed by nine appendices.
+        a) A clause starts with an integer, a period and a title on one line (13pt).
+        b) A sub-clause starts with an integer, a period and another integer (10pt body
+           text). A third number, such as 2.2.1, stays inside its sub-clause.
+        c) An appendix starts with "APPENDIX {integer}" (16pt), with its title on the line
+           below (13pt). Appendix 7 has no title.
+
+      Everything before clause 1 is front matter: the cover, contents, parties and recitals.
+      Leave out page 10, the signature block, and page 23, the Adobe audit trail. Both hold
+      personal data and state no term of the agreement. The signature block starts with its
+      last line on page 9, "Authorised signature on behalf of the Client": leave that out too.
+
+      Clause 1 is the definitions: each term comes before a colon ("Additional Fees: means
+      …"). Clause 1 also has numbered sub-clauses, 1.1 and 1.2, which are interpretation
+      provisions rather than definitions.
+
+    okf: |
+      Extract the definitions in clause 1 into 'definitions.md'. Give each term its own
+      heading. Treat 1.1 and 1.2 as ordinary sub-clauses.
+
+      For each clause:
+        a) If there are no sub-clauses, extract the whole clause into a concept file named
+           'clause-{number}', titled "Clause {number} – {clause title}".
+        b) If the sub-clauses are items of a single list introduced by the clause's opening
+           words, so that no sub-clause means anything on its own, keep the whole clause in
+           one concept file titled "Clause {number} – {clause title}": the opening words,
+           then each sub-clause in order under a sub-heading with its number. This applies to
+           clause 4 only.
+        c) Otherwise, put the clause's opening words in a concept file titled
+           "Clause {number} – {clause title} (opening words)". Then extract each sub-clause
+           into its own concept file named 'clause-{clause}-{sub-clause}', titled
+           "Clause {sub-clause number} – {clause title}".
+
+      Extract each appendix whole into a concept file named 'appendix-{number}', titled
+      "Appendix {number} – {appendix title}", or "Appendix {number}" if it has no title.
+      Turn the fee table in Appendix 1 into a markdown table.
+
+      Pad numbers in names to two digits. Turn references such as "clause 6.4" and
+      "Appendix 3" into links. Descriptions are the opening sentence, except for the
+      definitions, clause 4 and the appendices, which are hand-written.
+
+    single-file: |
+      One file, 'agency-agreement.md', of 90 sections: "Definitions" (clause number 1),
+      then each clause and sub-clause in order with its clause number as its reference
+      ("6.4"), clause 4 listing 4 and 4.1 to 4.6, then appendices 1 to 9 with "Appendix
+      {number}" as their reference. Links such as "clause 6.4" and "Appendix 3" point to
+      '#clause-06-04' and '#appendix-03'.
+
+  # ---------------------------------------------------------------------------------------
+  sample-lease:
+    source: "sources/RiversideHouse-IndividualLease.docx"
+    structure: |
+      This document is a sample long lease of a flat at Riverside House, with the flat, the
+      lessee and the money replaced by placeholders such as "Plot No XX" and "0.00%". It is
+      a Word document.
+
+      It is a series of clauses, most with sub-clauses, followed by ten schedules, some
+      broken into parts. The schedules and parts are mostly broken into paragraphs and
+      sub-paragraphs.
+        a) A clause is a heading in capitals (Heading 1 style) with an integer before it.
+        b) A sub-clause has an integer, a period and another integer before it (Heading 2).
+        c) A schedule starts with the text "THE Xth SCHEDULE" in capitals, where Xth is an
+           ordinal such as FIRST or TENTH, followed by a title on the next line.
+        d) A part starts with a line "PART N" in capitals, where N is a letter or a number
+           in words, sometimes in stray quotation marks (PART “A", "PART "D", PART "F''),
+           followed by a title on the next line.
+        e) In the schedules, a paragraph has an integer before it (Heading 1) and a
+           sub-paragraph an integer, a period and an integer (Heading 2).
+      None of these numbers are typed. Word generates them from the heading styles, so read
+      them as the document prints them. An empty numbered paragraph at the top of the
+      document takes number 1, so the first clause after the definitions is clause 2.
+
+      The particulars table on the cover gives the parties, the flat, the rent, the term and
+      the lessee's share of each part of the service charge. Clause 1 is typed by hand,
+      "1. In this Deed unless the context otherwise requires:", followed by the definitions
+      table (term in the left-hand column, meaning in the right). Everything before clause 2
+      is front matter.
+
+      A clause's own words can come before its sub-clauses, and in clause 3 also after them:
+      the "AND ALSO paying…" words follow 3.4.
+
+    okf: |
+      Extract the definitions table into 'definitions.md' and the particulars table into
+      'particulars.md'. Give each term its own heading, without its quotation marks or a
+      leading "the".
+
+      For each clause:
+        a) If there are no sub-clauses, extract the whole clause into a concept file named
+           'clause-{number}', titled "Clause {number} – {clause title}".
+        b) Keep clauses 3, 4 and 5 whole, each in one concept file titled
+           "Clause {number} – {clause title}": its own words and all its sub-clauses in the
+           order they appear, each sub-clause under a sub-heading with its number.
+        c) Otherwise, put the clause's own words outside its sub-clauses in a concept file
+           titled "Clause {number} – {clause title} (general words)". Then extract each
+           sub-clause into its own concept file named 'clause-{clause}-{sub-clause}',
+           titled "Clause {sub-clause number} – {clause title}".
+
+      For each schedule, or each part of a schedule, extract each paragraph with its
+      sub-paragraphs into its own concept file, titled
+      "The {ordinal} Schedule, Part {part} – paragraph {number}", leaving out the Part for a
+      schedule with no parts. A schedule or part with no numbered paragraphs is one concept
+      file (Parts B, C and E of the Sixth Schedule).
+
+      Record each concept's schedule and part in its frontmatter. Show clause titles in
+      sentence case. Pad numbers in names to two digits. Turn references such as
+      "Clause 7.10" and "Paragraph 3 of the Seventh Schedule" into links. Descriptions are
+      the opening sentence, except for the definitions, the particulars and clauses 3 to 5,
+      which are hand-written.
+
+    single-file: |
+      One file, 'sample-lease.md', of 140 sections: "Definitions" and "Particulars" (no
+      reference), then each clause, sub-clause and general-words section with its clause
+      number as its reference, clauses 3, 4 and 5 listing their sub-clause numbers too, then
+      each schedule paragraph with its paragraph number. Parts B, C and E of the Sixth
+      Schedule have no reference. Links such as "Clause 7.10" and "Paragraph 3 of the
+      Seventh Schedule" point to '#clause-07-10' and '#schedule-seventh-03'.
+
+  # ---------------------------------------------------------------------------------------
+  management-lease:
+    source: "sources/BK401853 Management Lease.pdf"
+    structure: |
+      This document is the management lease (title BK401853): a 999-year lease of the common
+      parts and grounds granted in December 2005 by Peverel Freeholds Limited to Peverel OM
+      Limited. It is a scanned official copy: read it from its checked transcript
+      (transcripts/management-lease.md), not from its OCR text layer.
+
+      It is a series of clauses, followed by two schedules.
+        a) A clause starts with a heading in bold. The deed prints no clause numbers; the
+           transcript adds numbers 1 to 6 from the contents page.
+        b) A sub-clause starts with an integer, a period and another integer.
+        c) A schedule starts with the text "The Xth Schedule" in bold, where Xth is an
+           ordinal, followed by a description in brackets. Its paragraphs start with an
+           integer followed by a period.
+      Everything before clause 1 is front matter: the Land Registry header, the parties and
+      the recitals. The deed ends at "IN WITNESS". The transcript leaves out the notes and
+      cover, the contents, the execution page (which carries signatures) and the title plans.
+
+      Clause 1 is the definitions, printed in two columns and written in the transcript as
+      "the term: meaning". Eight terms share one meaning in the original; each has its own
+      line.
+
+    okf: |
+      Extract the definitions into 'definitions.md'. Give each term its own heading, without
+      its quotation marks or a leading "the".
+
+      Extract each clause whole, with its sub-clauses, into a concept file named
+      'clause-{number}', titled "Clause {number} – {clause title}".
+
+      Extract each schedule whole, with its paragraphs, into a concept file named
+      'schedule-{ordinal}', titled "{ordinal} Schedule". Keep the bracketed description as
+      its first line.
+
+      Each concept has a hand-written one-sentence description.
+
+    single-file: |
+      One file, 'management-lease.md', of 8 sections: "Definitions" (clause number 1),
+      clauses 2 to 6 with their clause numbers, then the First and Second Schedules with no
+      reference. The lease has no cross-reference links.
+
+  # ---------------------------------------------------------------------------------------
+  land-title:
+    source: "sources/RiversideHouseReading-LandTitle-BK122099.pdf"
+    structure: &register-structure |
+      This document is a title register printed from HM Land Registry's "Search for land
+      and property information" service. It is not an official copy. It is a born-digital
+      PDF: read its text directly.
+
+      Page 1 holds a disclaimer, the time the register was viewed, and a register summary
+      (owner and price). Then come three registers, each headed "{letter}: {topic} Register":
+      A: Property, B: Proprietorship and C: Charges. Each register has an introductory
+      sentence and, for B and C, a "Class of Title" line.
+
+      Each register is a list of entries laid out in columns: entry number and entry date
+      on the left, the entry's text on the right. Find an entry by where its number sits,
+      not by a line starting with a number, because entries quote deeds with numbered
+      clauses of their own ("3.1 Not for 21 years…"). Some entries have no date. A "NOTE:"
+      line, or a "Key : value" line such as "Term : 999 years", starts a new line within an
+      entry. Remove the stray "¬" before NOTE.
+
+      In the freehold title's charges register, entries 22 to 100 are the schedule of
+      notices of leases: each is a list of "Key : value" fields (registration date, plan
+      reference, property description, date of lease, term, lessee's title) with no entry
+      date.
+
+    okf: &register-okf |
+      Extract each register into its own concept file named after its heading
+      ('a-property-register'), titled "{tenure} title {title number} – {register heading}",
+      for example "Freehold title BK397927 – A: Property Register".
+
+      Keep the register's introductory sentence and its Class of Title line. Put its entries
+      in a markdown table with the columns Entry, Date and Description. Put any schedule of
+      notices of leases in a second table under the heading "Schedule of notices of leases",
+      with a column for each field and any note last.
+
+      Leave out the page-1 disclaimer and the register summary. Record the title number,
+      tenure, register, number of entries and the time the register was viewed in each
+      concept's frontmatter.
+
+    single-file: &register-single-file |
+      One file per title, named by its id ('freehold-title.md'), of three sections, one per
+      register (A: Property, B: Proprietorship, C: Charges), each with the register as its
+      reference. The registers have no cross-reference links.
+
+  freehold-title:
+    source: "sources/RiversideHouseReading-FreeholdTitle-BK397927.pdf"
+    structure: *register-structure
+    okf: *register-okf
+    single-file: *register-single-file
+
+  leasehold-title:
+    source: "sources/RiversideHouseReading-LeaseholdTitle-BK401853.pdf"
+    structure: *register-structure
+    okf: *register-okf
+    single-file: *register-single-file
+
+# -----------------------------------------------------------------------------------------
+additional-files:
+
+  legislation:
+    single-file: |
+      One file, 'legislation.md', titled "Legislation" with the description "Acts referred
+      to by the governing documents.", built from the legislation entries in
+      config/manifest.yml. Give each Act a section titled with its reference, with its
+      description as a field and a link to its full text on legislation.gov.uk as its text.
+      No reference field, and no sources in the frontmatter.
+
+  building:
+    single-file: |
+      One file, 'building.md', titled "Building", built from the concept files in
+      authored/building/ in filename order (the floor layout, then the background), with
+      their sources in the frontmatter. Each concept's own heading 1 gives way to the
+      section heading. Leave out the layout image and the "Diagram" section that describes
+      it: a heading 2 section that embeds an image goes with it. Links to the other
+      building concept point to its anchor.

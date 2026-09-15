@@ -1,0 +1,47 @@
+# Articles of Association — declarative parse rules.
+# Structured exceptions and guidance for Claude: overrides/articles.md.
+
+front-matter:
+  ends-at: part                # lines before the first Part heading are the title block
+
+headings:                      # highest level first; a new heading clears every lower level
+  - level: part
+    match: '^PART\s+(?P<number>\d+)\b\s*(?P<title>.*)$'
+    bold: true
+    title-from-next-line: true # when the title isn't on the same line as "PART n"
+    display: 'Part {number} – {title}'
+  - level: section
+    bold: true
+    case: upper
+    max-words: 15
+  - level: article-heading
+    bold: true
+    case: mixed
+    max-words: 15
+    scope: next-unit           # belongs only to the article that follows it
+
+display-case: sentence         # upper-case headings are shown in sentence case…
+acronyms: [RTM]                # …keeping these words in capitals
+
+units:
+  key: [number]
+  patterns:
+    - match: '^(?P<number>\d{1,3})\.\s+'
+      filename: 'article-{number}'          # numbers are padded to two digits
+      title: 'Article {number} – {heading}'
+      title-without-heading: 'Article {number}'
+  heading-level: article-heading
+  fields: [part, section]      # heading levels recorded in each concept's frontmatter
+  number-field: article_number
+  numbers-field: article_numbers
+
+definitions:
+  unit: 1
+  file: definitions
+  title: Definitions
+  type: definitions
+  term: '^[“"](?P<term>[^”"]+)[”"]'
+  ends-at: '^\(\d+\)\s'        # a numbered paragraph after the list closes it
+
+cross-references:              # turned into links to the concept holding that unit
+  - '(?i)\barticle\s+(?P<number>\d+)(?:\(\w+\))*'

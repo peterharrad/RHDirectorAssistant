@@ -1,0 +1,16 @@
+# HM Land Registry title registers — declarative parse rules.
+# Shared by the land, freehold and leasehold titles. These are printouts from the
+# "Search for land and property information" service, not official copies.
+#
+# Grain: one concept per register (A: Property, B: Proprietorship, C: Charges), with its
+# entries as a markdown table. Handled by parse/registers.py rather than the unit
+# pipeline, because entries are found by column position, not by pattern.
+
+kind: title-register
+title: '{tenure} title {title_number} – {heading}'   # the heading alone repeats across titles
+schedule-heading: '## Schedule of notices of leases'
+
+extract:
+  description-column: 200      # words left of this x position are entry number and date
+  paragraph-gap: 27            # rows further apart than this start a new paragraph
+  heading-size: 16             # "A: Property Register"

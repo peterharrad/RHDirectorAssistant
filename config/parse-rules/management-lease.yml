@@ -1,0 +1,46 @@
+# Riverside House management lease (title BK401853) — declarative parse rules.
+# Scanned PDF, so the build reads transcripts/management-lease.md instead.
+# Structured exceptions and guidance for Claude: overrides/management-lease.md.
+#
+# Grain: one concept per clause and one per schedule, each taken whole. There are no
+# unit patterns: every concept is the text under a heading, via heading-fallback.
+
+front-matter:
+  ends-at: clause              # HM Land Registry header, the parties and the recitals
+
+back-matter:
+  starts-at: '^IN WITNESS'     # execution formalities close the deed
+
+headings:                      # a schedule heading clears the clause heading
+  - level: schedule
+    bold: true
+    match: '^The (?P<ordinal>\w+) Schedule$'
+    display: 'The {ordinal} Schedule'
+  - level: clause
+    bold: true
+    match: '^(?P<number>\d+)\.\s+(?P<title>.+)$'
+    display: '{number}. {title}'
+
+units:
+  key: [clause]
+  number-field: clause_number
+  description: first-sentence  # for a schedule, its bracketed description
+  patterns: []                 # sub-clauses and paragraphs stay inside their clause or schedule
+  heading-fallback:
+    - level: clause
+      filename: 'clause-{clause_number}'
+      title: 'Clause {clause_number} – {clause_title}'
+      number: '{clause_number}'
+      key: '{clause_number}'
+    - level: schedule
+      filename: 'schedule-{schedule_ordinal_lower}'
+      title: '{schedule_ordinal} Schedule'
+      number: ''
+      key: 'schedule.{schedule_ordinal}'
+
+definitions:
+  unit: 1                      # clause 1 is the definitions clause
+  file: definitions
+  title: Definitions
+  type: definitions
+  term: '^the\s+[“"](?P<term>[^”"]+)[”"]'   # the "Apartments": means …
