@@ -45,8 +45,10 @@ Posts describing the approach: _TODO: links_
 | `single-files/` | One file per document — fully generated, see [docs/single-file-conventions.md](docs/single-file-conventions.md) |
 | `transcripts/` | Committed transcriptions of scanned PDFs, so builds are repeatable |
 | `tests/fixtures/` | Short hand-written snippets for the unit tests |
-| `sources/` | Real source documents — private repo only |
+| `sources/` | Redacted copies of the source documents; the Articles are real |
 | `work/` | Intermediate extraction output for inspection — not committed |
+| `INSTRUCTIONS.md` | Instructions for an AI assistant (a Claude project or Gemini Gem) loaded with `single-files/` |
+| `test_scenarios.md` | Questions for trying out the assistant |
 
 ## Getting started
 
@@ -86,6 +88,15 @@ The redacted copies are made in the private repo, which holds the real documents
 be seen and reused; run here, it would only redact the copies again. `rh-redact --check`
 rebuilds the redacted copies and compares their concept names, titles and positions with
 the real documents'. It needs `pip install -e ".[redact]"` (reportlab).
+
+## Using the files with an AI assistant
+
+Load the files in `single-files/` into a Claude project or a Gemini Gem as its knowledge, and
+use `INSTRUCTIONS.md` as its instructions: the assistant then answers from those documents
+only, citing the clause, article, register entry or section each statement comes from.
+`test_scenarios.md` has questions to try it out with. In this repo the documents are
+redacted, so the assistant can show how it finds and cites things but not what the real
+documents say.
 
 ## Licence
 
